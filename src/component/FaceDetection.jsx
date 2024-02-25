@@ -2,51 +2,80 @@
 import React, { useEffect, useRef,  } from 'react';
 import * as faceapi from 'face-api.js';
 const FaceDetection = () => {
-
-    const videoRef = useRef(null)
-   
-
-    useEffect(() => {
-        const loadModels = () => {
-            const ModelURI = '../../public/models';
-            Promise.all([
-                faceapi.nets.tinyFaceDetector.loadFromUri(ModelURI),
-                faceapi.nets.faceLandmark68Net.loadFromUri(ModelURI),
-                faceapi.nets.faceRecognitionNet.loadFromUri(ModelURI),
-                faceapi.nets.faceExpressionNet.loadFromUri(ModelURI),
-            ]).then(() => startCamera()); 
-        }
-        loadModels();
-    }, []);
-
-
-    const startCamera = async () => {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            } catch (error) {
-                console.error('Error accessing camera:', error);
-            }
-        }
-    };
-
-    const responseFromDetection = async () => {
-        const detections = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions).withFaceLandmarks().withFaceExpressions();
-        console.log('>>>>>>>>>>>', detections)
+    const videoRef = useRef()
+    const canvasRef = useRef()
+  
+    // LOAD FROM USEEFFECT
+    useEffect(()=>{
+      startVideo()
+      videoRef && loadModels()
+  
+    },[])
+  
+  
+  
+    // OPEN YOU FACE WEBCAM
+    const startVideo = ()=>{
+      navigator.mediaDevices.getUserMedia({video:true})
+      .then((currentStream)=>{
+        videoRef.current.srcObject = currentStream
+      })
+      .catch((err)=>{
+        console.log(err)
+      })
     }
-        responseFromDetection()
-   
-
+    // LOAD MODELS FROM FACE API
+  
+    const loadModels = ()=>{
+      Promise.all([
+        // THIS FOR FACE DETECT AND LOAD FROM YOU PUBLIC/MODELS DIRECTORY
+        faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
+        faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+        faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+        faceapi.nets.faceExpressionNet.loadFromUri("/models")
+  
+        ]).then(()=>{
+        faceMyDetect()
+      })
+    }
+  
+    const faceMyDetect = ()=>{
+      setInterval(async()=>{
+        const detections = await faceapi.detectAllFaces(videoRef.current,
+          new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
+  
+        // DRAW YOU FACE IN WEBCAM
+        canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(videoRef.current)
+        faceapi.matchDimensions(canvasRef.current,{
+          width:940,
+          height:650
+        })
+  
+        const resized = faceapi.resizeResults(detections,{
+           width:940,
+          height:650
+        })
+  
+        faceapi.draw.drawDetections(canvasRef.current,resized)
+        faceapi.draw.drawFaceLandmarks(canvasRef.current,resized)
+        faceapi.draw.drawFaceExpressions(canvasRef.current,resized)
+  
+  
+      },1000)
+    }
+  
     return (
-        <>
-            face detection
-            <video ref={videoRef} autoPlay muted height={450} width={450} />
-        </>
-    );
-}
+      <div className="myapp">
+      <h1>FAce Detection</h1>
+        <div className="appvide">
+        <video crossOrigin="anonymous" ref={videoRef}   autoPlay></video>
+        </div>
+        <canvas ref={canvasRef} 
+        className="appcanvas"/>
+      </div>
+      )
+  
+  }
 
 
 export default FaceDetection
