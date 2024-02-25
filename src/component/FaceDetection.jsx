@@ -8,7 +8,7 @@ const FaceDetection = () => {
     const canvasRef = useRef();
     const navigate = useNavigate();
     const [intervalId,  setIntervalId] = useState(null)
-    const { setIsAuthenticated } = useContext(AuthContext);
+    const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
     const [isFaceStraight, setIsFaceStraight] = useState(false);
 
     // LOAD FROM USEEFFECT
@@ -57,12 +57,11 @@ const FaceDetection = () => {
                 const nose = faceLandmarks.getNose();
                 // Calculate angle between eyes and nose
                 const angle = calculateAngle(leftEye[0], rightEye[0], nose[2]);
-                setIsFaceStraight(angle < 20); // Set threshold angle as per your requirement
-                setIsAuthenticated(angle < 20); // Set authentication based on face straightness
-                console.log(angle < 20 ? 'Face is straight' : 'Face is not straight');
+                setIsFaceStraight(angle < 10); // Set threshold angle as per your requirement
+                setIsAuthenticated(angle < 10); // Set authentication based on face straightness
+                console.log(angle < 10 ? 'Face is straight' : 'Face is not straight');
             } else {
                 setIsAuthenticated(false); // No face detected
-                console.log('>>>>>>>>>>>face not straight')
             }
 
             // DRAW YOU FACE IN WEBCAM
@@ -91,17 +90,18 @@ const FaceDetection = () => {
     };
 
     useEffect(() => {
-        if (!isFaceStraight) {
-            setIsAuthenticated(false);
+        if (isAuthenticated && isFaceStraight) {
+            navigate('/');
         }
-    }, [isFaceStraight, setIsAuthenticated]);
+    }, [isAuthenticated, isFaceStraight, navigate]);
 
     return (
-        <div className="flex bg-blue-400 h-screen w-full items-center justify-center">
-            <div className="appvide bg-red-400">
-                <video crossOrigin="anonymous" ref={videoRef} autoPlay />
+        <div className="flex flex-col bg-slate-900 h-screen w-full items-center justify-center">
+            <div className=" rounded-xl ">
+                <video className='rounded-xl' crossOrigin="anonymous" ref={videoRef} autoPlay />
             </div>
-            <canvas ref={canvasRef} className="bg-red-400/25 absolute" />
+            <canvas ref={canvasRef} className=" absolute overflow-hidden" />
+            <h1 className='text-2xl  mt-4 font-extrabold text-white'>Try to stable your face</h1>
         </div>
     );
 };
