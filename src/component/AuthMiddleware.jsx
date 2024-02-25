@@ -1,12 +1,13 @@
 // AuthMiddleware.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home } from './Home.jsx';
+import { AuthContext}  from '../Context.jsx';
 
 const AuthMiddleware = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
+  const {isAuthenticated, setIsAuthenticated} = useContext(AuthContext)
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/faceAuth');

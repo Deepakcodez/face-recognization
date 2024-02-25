@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import AuthMiddleware from './component/AuthMiddleware';
 import FaceDetection from './component/FaceDetection';
 import { Navbar } from './component/Navbar';
-// import Facedetection from './component/Facedetection';
+// import Facedetection from './componentD/Facedetection';
 // 
 
 
